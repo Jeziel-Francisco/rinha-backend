@@ -21,4 +21,4 @@
 go.work
 
 # Docker volumes
-./postgres_data
+postgres_data/
