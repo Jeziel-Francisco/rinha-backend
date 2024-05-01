@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"docker-example/src/commons"
 	"docker-example/src/ports/out/infraestructure"
 	"fmt"
 	"os"
@@ -11,7 +10,7 @@ import (
 func NewPostgres() infraestructure.Database {
 	postgres := infraestructure.NewPostgresSql()
 
-	connectionString := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
+	connectionString := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
 		os.Getenv("DB_POSTGRES_USER"),
 		os.Getenv("DB_POSTGRES_PASSWORD"),
 		os.Getenv("DB_POSTGRES_HOST"),
@@ -22,9 +21,6 @@ func NewPostgres() infraestructure.Database {
 	if err := postgres.Connect(context.Background(), connectionString); err != nil {
 		panic(err)
 	}
-	defer postgres.Close(context.Background())
-
-	commons.ContainerInjectable.Register(commons.PostgresDatabase, postgres)
 
 	return postgres
 }

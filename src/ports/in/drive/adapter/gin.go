@@ -3,8 +3,8 @@ package adapter
 import (
 	"docker-example/src/ports/in/drive/web/dto"
 	"docker-example/src/ports/in/handler"
+
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 func GinAdapter(fn handler.ContractHandler) gin.HandlerFunc {
@@ -28,7 +28,7 @@ func GinAdapter(fn handler.ContractHandler) gin.HandlerFunc {
 		response, err := fn(params, params, headers, body)
 
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, err)
+			c.JSON(err.Status(), err.Body())
 			return
 		}
 		resultResponse := response.(*dto.DefaultResponse)

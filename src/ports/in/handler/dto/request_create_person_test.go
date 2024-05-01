@@ -1,68 +1,69 @@
 package dto
 
 import (
-	"errors"
-	"github.com/stretchr/testify/require"
+	"docker-example/src/commons/errors"
 	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestValidate(t *testing.T) {
 	type scenario struct {
-		name          string
-		person        Person
-		expectedError error
+		name                   string
+		RequestCreatePersonDto RequestCreatePersonDto
+		expectedError          errors.CommonError
 	}
 	scenarios := []scenario{
 		{
-			name:          "empty nickname",
-			person:        Person{},
-			expectedError: errors.New("Apelido inválido"),
+			name:                   "empty nickname",
+			RequestCreatePersonDto: RequestCreatePersonDto{},
+			expectedError:          errors.NewInvaliFieldError("apelido"),
 		},
 		{
 			name: "over len nickname",
-			person: Person{
+			RequestCreatePersonDto: RequestCreatePersonDto{
 				Nickname: "asdfgasfasasdfgasfasasdfgasfasasdfgasfasasdfgasfasasdfgasfasasdfgasfas",
 			},
-			expectedError: errors.New("Apelido inválido"),
+			expectedError: errors.NewInvaliFieldError("apelido"),
 		},
 		{
 			name: "empty name",
-			person: Person{
+			RequestCreatePersonDto: RequestCreatePersonDto{
 				Nickname: "Bob",
 			},
-			expectedError: errors.New("Nome inválido"),
+			expectedError: errors.NewInvaliFieldError("nome"),
 		},
 		{
 			name: "over len name",
-			person: Person{
+			RequestCreatePersonDto: RequestCreatePersonDto{
 				Nickname: "Bob",
 				Name:     "asdfgasfasasdfgasfasasdfgasfasasdfgasfasasdfgasfasasdfgasfasasdfgasfasasdfgasfasasdfgasfasasdfgasfasasdfgasfasasdfgasfasasdfgasfasasdfgasfasasdfgasfasasdfgasfasasdfgasfasasdfgasfasasdfgasfasasdfgasfasasdfgasfas",
 			},
-			expectedError: errors.New("Nome inválido"),
+			expectedError: errors.NewInvaliFieldError("nome"),
 		},
 		{
 			name: "invalid birth date",
-			person: Person{
+			RequestCreatePersonDto: RequestCreatePersonDto{
 				Nickname:  "Bob",
 				Name:      "Bob marley",
 				BirthDate: "",
 			},
-			expectedError: errors.New("Data de nascimento inválida"),
+			expectedError: errors.NewInvaliFieldError("nascimento"),
 		},
 		{
 			name: "invalid stack item",
-			person: Person{
+			RequestCreatePersonDto: RequestCreatePersonDto{
 				Nickname:  "Bob",
 				Name:      "Bob marley",
 				BirthDate: "1945-02-06",
 				Stacks:    []string{"asdfgasfasasdfgasfasasdfgasfasasdfgasfasasdfgasfasasdfgasfasasdfgasfas"},
 			},
-			expectedError: errors.New("Stack item inválido, asdfgasfasasdfgasfasasdfgasfasasdfgasfasasdfgasfasasdfgasfasasdfgasfas"),
+			expectedError: errors.NewInvaliFieldError("asdfgasfasasdfgasfasasdfgasfasasdfgasfasasdfgasfasasdfgasfasasdfgasfas"),
 		},
 		{
-			name: "valid person",
-			person: Person{
+			name: "valid RequestCreatePersonDto",
+			RequestCreatePersonDto: RequestCreatePersonDto{
 				Nickname:  "Bob",
 				Name:      "Bob marley",
 				BirthDate: "1945-02-06",
@@ -72,7 +73,7 @@ func TestValidate(t *testing.T) {
 		},
 	}
 	for _, scenario := range scenarios {
-		err := scenario.person.Validate()
+		err := scenario.RequestCreatePersonDto.Validate()
 		require.True(t, reflect.DeepEqual(err, scenario.expectedError))
 	}
 }
