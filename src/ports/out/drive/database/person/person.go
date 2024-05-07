@@ -12,8 +12,10 @@ import (
 )
 
 var (
-	scriptGetPersonByID = "select id, nickname, name, birthdate, stack from public.person where nickname = $1"
-	scriptInsertPerson  = "INSERT INTO public.person (id, nickname, name, birthdate, stack, search) VALUES ($1, $2, $3, $4, $5, $6);"
+	scriptGetPersonByNickname = "select id, nickname, name, birthdate, stack from public.person where nickname = $1"
+	scriptGetPersonByID       = "select id, nickname, name, birthdate, stack from public.person where id = $1"
+	scriptGetPersonByTerm     = "select id, nickname, name, birthdate, stack from public.person where search LIKE '%' || $1 || '%'"
+	scriptInsertPerson        = "INSERT INTO public.person (id, nickname, name, birthdate, stack, search) VALUES ($1, $2, $3, $4, $5, $6);"
 )
 
 func NewPersonDatabase(database infraestructure.Database) PersonDatabase {
@@ -24,6 +26,7 @@ func NewPersonDatabase(database infraestructure.Database) PersonDatabase {
 
 type PersonDatabase interface {
 	GetPersonByNickname(nickname string) (*dto.ResponseGetPersonDto, errors.CommonError)
+	GetPersonByID(ID uuid.UUID) (*dto.ResponseGetPersonDto, errors.CommonError)
 	Create(person *dto.RequestCreatePersonDto) (*dto.ResponseCreatePersonDto, errors.CommonError)
 }
 
@@ -36,7 +39,27 @@ func (client *personDatabase) GetPersonByNickname(nickname string) (*dto.Respons
 	var birthDate time.Time
 	var ID uuid.UUID
 
-	err := client.database.GetPoolConnection().QueryRow(context.Background(), scriptGetPersonByID, nickname).Scan(&ID, &resultNickname, &name, &birthDate, &stacks)
+	err := client.database.GetPoolConnection().QueryRow(context.Background(), scriptGetPersonByNickname, nickname).Scan(&ID, &resultNickname, &name, &birthDate, &stacks)
+	if client.database.HasError(err) {
+		return nil, errors.NewClientErrorByError(err)
+	}
+	if client.database.HasEmptyData(err) {
+		return nil, nil
+	}
+	return &dto.ResponseGetPersonDto{
+		ID:        ID,
+		Nickname:  nickname,
+		Name:      name,
+		BirthDate: birthDate.String(),
+		Stacks:    strings.Split(stacks, ","),
+	}, nil
+}
+
+func (client *personDatabase) GetPersonByID(ID uuid.UUID) (*dto.ResponseGetPersonDto, errors.CommonError) {
+	var nickname, name, stacks string
+	var birthDate time.Time
+
+	err := client.database.GetPoolConnection().QueryRow(context.Background(), scriptGetPersonByID, ID).Scan(&ID, &nickname, &name, &birthDate, &stacks)
 	if client.database.HasError(err) {
 		return nil, errors.NewClientErrorByError(err)
 	}

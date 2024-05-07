@@ -36,11 +36,13 @@ func initializeDependencies() handler.Handler {
 	// application service
 	checkExistsnickNameService := service.NewCheckExistsNicknameService(personAdapter)
 	personCreateService := service.NewPersonCreateService(personAdapter)
+	getPersonByIDService := service.NewGetPersonByIDService(personAdapter)
 
 	// application usecase
 	personCreateUseCase := usecase.NewPersonCreateUseCase(checkExistsnickNameService, personCreateService)
+	getPersonByIDUseCase := usecase.NewGetPersonByIDUseCase(getPersonByIDService)
 
-	return handler.NewHandler(personCreateUseCase)
+	return handler.NewHandler(personCreateUseCase, getPersonByIDUseCase)
 
 }
 

@@ -6,15 +6,15 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-type personCreateUseCaseMock struct {
+type getPersonByIDUseCaseMock struct {
 	mock.Mock
 }
 
-func NewPersonCreateUseCaseMock() *personCreateUseCaseMock {
-	return &personCreateUseCaseMock{}
+func NewGetPersonByIDUseCaseMock() *getPersonByIDUseCaseMock {
+	return &getPersonByIDUseCaseMock{}
 }
 
-func (useCaseMock *personCreateUseCaseMock) Execute(intention interface{}) (err errors.CommonError) {
+func (useCaseMock *getPersonByIDUseCaseMock) Execute(intention interface{}) (err errors.CommonError) {
 	args := useCaseMock.Called(intention)
 	responseError := args[0]
 	if responseError != nil {

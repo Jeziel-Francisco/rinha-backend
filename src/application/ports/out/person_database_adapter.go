@@ -7,5 +7,6 @@ import (
 
 type PersonDatabaseAdapter interface {
 	GetPersonByNickname(nickName string) (*entities.Person, errors.CommonError)
+	GetPersonByID(ID string) (*entities.Person, errors.CommonError)
 	Create(person *entities.Person) (*entities.Person, errors.CommonError)
 }

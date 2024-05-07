@@ -7,7 +7,6 @@ import (
 	"docker-example/src/ports/in/handler/dto"
 	"docker-example/src/ports/in/usecase"
 	"encoding/json"
-	"fmt"
 	"net/http"
 )
 
@@ -16,15 +15,19 @@ type Handler interface {
 		requestHeaders map[string][]string, requestBody []byte) (interface{}, errors.CommonError)
 	PersonCreate(requestPathParam map[string][]string, requestQueryParam map[string][]string,
 		requestHeaders map[string][]string, requestBody []byte) (interface{}, errors.CommonError)
+	GetPersonByID(requestPathParam map[string][]string, requestQueryParam map[string][]string,
+		requestHeaders map[string][]string, requestBody []byte) (interface{}, errors.CommonError)
 }
 
 type handler struct {
-	personCreateUseCase usecase.UseCase
+	personCreateUseCase  usecase.UseCase
+	getPersonByIDUseCase usecase.UseCase
 }
 
-func NewHandler(personCreateUseCase usecase.UseCase) Handler {
+func NewHandler(personCreateUseCase usecase.UseCase, getPersonByIDUseCase usecase.UseCase) Handler {
 	return &handler{
-		personCreateUseCase: personCreateUseCase,
+		personCreateUseCase:  personCreateUseCase,
+		getPersonByIDUseCase: getPersonByIDUseCase,
 	}
 }
 
@@ -70,7 +73,43 @@ func (handler *handler) PersonCreate(requestPathParam map[string][]string, reque
 		ResponseBody: responseBody,
 		ResponseCode: http.StatusCreated,
 		ResponseHeaders: map[string]string{
-			"location": fmt.Sprintf("/pessoas/%s", intention.Person.ID),
+			"location": intention.Person.ID,
 		},
+	}, nil
+}
+
+func (handler *handler) GetPersonByID(requestPathParam map[string][]string, requestQueryParam map[string][]string,
+	requestHeaders map[string][]string, requestBody []byte) (interface{}, errors.CommonError) {
+
+	inputData := dto.RequestGetPersonByID{
+		ID: requestPathParam["id"][0],
+	}
+
+	if err := inputData.Validate(); err != nil {
+		return nil, err
+	}
+
+	intention := &entities.GetPersonByIDIntention{
+		Person: entities.Person{
+			ID: inputData.ID,
+		},
+	}
+
+	if err := handler.getPersonByIDUseCase.Execute(intention); err != nil {
+		return nil, err
+	}
+
+	responseBody := &dto.ResponseGetPersonDetail{
+		ID:        intention.Person.ID,
+		Nickname:  intention.Person.Nickname,
+		Name:      intention.Person.Name,
+		BirthDate: intention.Person.BirthDate,
+		Stacks:    intention.Person.Stacks,
+	}
+
+	return &defaultDto.DefaultResponse{
+		ResponseBody:    responseBody,
+		ResponseCode:    http.StatusOK,
+		ResponseHeaders: map[string]string{},
 	}, nil
 }

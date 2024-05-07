@@ -6,6 +6,8 @@ import (
 	"docker-example/src/commons/errors"
 	"docker-example/src/ports/out/drive/adapter/mapper"
 	"docker-example/src/ports/out/drive/database/person"
+
+	"github.com/google/uuid"
 )
 
 func NewPersonDatabaseAdapter(personDatabase person.PersonDatabase) out.PersonDatabaseAdapter {
@@ -20,6 +22,15 @@ type personDatabaseAdapter struct {
 
 func (adapter *personDatabaseAdapter) GetPersonByNickname(nickname string) (*entities.Person, errors.CommonError) {
 	result, err := adapter.personDatabase.GetPersonByNickname(nickname)
+	if err != nil {
+		return nil, err
+	}
+	return mapper.FromResponseGetPersonDtoToPerson(result), nil
+}
+
+func (adapter *personDatabaseAdapter) GetPersonByID(ID string) (*entities.Person, errors.CommonError) {
+	newID, _ := uuid.Parse(ID)
+	result, err := adapter.personDatabase.GetPersonByID(newID)
 	if err != nil {
 		return nil, err
 	}

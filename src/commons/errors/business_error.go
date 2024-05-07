@@ -49,3 +49,7 @@ func NewInvaliFieldError(fielName string) *BusinessError {
 func NewPersonAlreadyExists() *BusinessError {
 	return NewBusinessError(http.StatusBadRequest, "person already exists", "person_already_exists")
 }
+
+func NewPersonNotFound() *BusinessError {
+	return NewBusinessError(http.StatusNotFound, "person not found", "person_not_found")
+}
