@@ -29,3 +29,17 @@ func FromResponseGetPersonDtoToPerson(source *dto.ResponseGetPersonDto) *entitie
 		Stacks:    source.Stacks,
 	}
 }
+
+func FromListResponseGetPersonDtoToListPerson(sources []*dto.ResponseGetPersonDto) []*entities.Person {
+	if len(sources) == 0 {
+		return nil
+	}
+	var result []*entities.Person
+	for _, source := range sources {
+		if source.IsEmpty() {
+			continue
+		}
+		result = append(result, FromResponseGetPersonDtoToPerson(source))
+	}
+	return result
+}

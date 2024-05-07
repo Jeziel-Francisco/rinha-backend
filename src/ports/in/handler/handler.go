@@ -1,10 +1,10 @@
 package handler
 
 import (
-	"docker-example/src/application/domain/entities"
 	"docker-example/src/commons/errors"
 	defaultDto "docker-example/src/ports/in/drive/web/dto"
 	"docker-example/src/ports/in/handler/dto"
+	"docker-example/src/ports/in/handler/mapper"
 	"docker-example/src/ports/in/usecase"
 	"encoding/json"
 	"net/http"
@@ -17,17 +17,21 @@ type Handler interface {
 		requestHeaders map[string][]string, requestBody []byte) (interface{}, errors.CommonError)
 	GetPersonByID(requestPathParam map[string][]string, requestQueryParam map[string][]string,
 		requestHeaders map[string][]string, requestBody []byte) (interface{}, errors.CommonError)
+	GetPersonByTerm(requestPathParam map[string][]string, requestQueryParam map[string][]string,
+		requestHeaders map[string][]string, requestBody []byte) (interface{}, errors.CommonError)
 }
 
 type handler struct {
-	personCreateUseCase  usecase.UseCase
-	getPersonByIDUseCase usecase.UseCase
+	personCreateUseCase    usecase.UseCase
+	getPersonByIDUseCase   usecase.UseCase
+	getPersonByTermUseCase usecase.UseCase
 }
 
-func NewHandler(personCreateUseCase usecase.UseCase, getPersonByIDUseCase usecase.UseCase) Handler {
+func NewHandler(personCreateUseCase usecase.UseCase, getPersonByIDUseCase usecase.UseCase, getPersonByTermUseCase usecase.UseCase) Handler {
 	return &handler{
-		personCreateUseCase:  personCreateUseCase,
-		getPersonByIDUseCase: getPersonByIDUseCase,
+		personCreateUseCase:    personCreateUseCase,
+		getPersonByIDUseCase:   getPersonByIDUseCase,
+		getPersonByTermUseCase: getPersonByTermUseCase,
 	}
 }
 
@@ -54,23 +58,14 @@ func (handler *handler) PersonCreate(requestPathParam map[string][]string, reque
 		return nil, err
 	}
 
-	intention := &entities.CreatePersonIntention{
-		Person: entities.Person{
-			Nickname:  inputData.Nickname,
-			Name:      inputData.Name,
-			BirthDate: inputData.BirthDate,
-			Stacks:    inputData.Stacks,
-		},
-	}
+	intention := mapper.FromRequestCreatePersonDtoToCreatePersonIntention(&inputData)
 
 	if err := handler.personCreateUseCase.Execute(intention); err != nil {
 		return nil, err
 	}
 
-	responseBody := &dto.ResponseCreatePersonDto{ID: intention.Person.ID}
-
 	return &defaultDto.DefaultResponse{
-		ResponseBody: responseBody,
+		ResponseBody: mapper.FromPersonIDToResponseCreatePersonDto(&intention.Person.ID),
 		ResponseCode: http.StatusCreated,
 		ResponseHeaders: map[string]string{
 			"location": intention.Person.ID,
@@ -81,7 +76,7 @@ func (handler *handler) PersonCreate(requestPathParam map[string][]string, reque
 func (handler *handler) GetPersonByID(requestPathParam map[string][]string, requestQueryParam map[string][]string,
 	requestHeaders map[string][]string, requestBody []byte) (interface{}, errors.CommonError) {
 
-	inputData := dto.RequestGetPersonByID{
+	inputData := &dto.RequestGetPersonByID{
 		ID: requestPathParam["id"][0],
 	}
 
@@ -89,26 +84,38 @@ func (handler *handler) GetPersonByID(requestPathParam map[string][]string, requ
 		return nil, err
 	}
 
-	intention := &entities.GetPersonByIDIntention{
-		Person: entities.Person{
-			ID: inputData.ID,
-		},
-	}
+	intention := mapper.FromRequestGetPersonByIDToCreatePersonIntention(inputData)
 
 	if err := handler.getPersonByIDUseCase.Execute(intention); err != nil {
 		return nil, err
 	}
 
-	responseBody := &dto.ResponseGetPersonDetail{
-		ID:        intention.Person.ID,
-		Nickname:  intention.Person.Nickname,
-		Name:      intention.Person.Name,
-		BirthDate: intention.Person.BirthDate,
-		Stacks:    intention.Person.Stacks,
+	return &defaultDto.DefaultResponse{
+		ResponseBody:    mapper.FromGetPersonByIDToResponseGetPersonDetail(&intention.Person),
+		ResponseCode:    http.StatusOK,
+		ResponseHeaders: map[string]string{},
+	}, nil
+}
+
+func (handler *handler) GetPersonByTerm(requestPathParam map[string][]string, requestQueryParam map[string][]string,
+	requestHeaders map[string][]string, requestBody []byte) (interface{}, errors.CommonError) {
+
+	inputData := &dto.RequestGetPersonByTerm{
+		Term: requestPathParam["t"][0],
+	}
+
+	if err := inputData.Validate(); err != nil {
+		return nil, err
+	}
+
+	intention := mapper.FromRequestGetPersonByTermToCreatePersonIntention(inputData)
+
+	if err := handler.getPersonByTermUseCase.Execute(intention); err != nil {
+		return nil, err
 	}
 
 	return &defaultDto.DefaultResponse{
-		ResponseBody:    responseBody,
+		ResponseBody:    mapper.FromGetPersonByTermToListResponseGetPersonDetail(intention.People),
 		ResponseCode:    http.StatusOK,
 		ResponseHeaders: map[string]string{},
 	}, nil

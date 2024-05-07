@@ -2,6 +2,7 @@ package dto
 
 import (
 	"docker-example/src/commons/errors"
+	"reflect"
 
 	"github.com/google/uuid"
 )
@@ -15,4 +16,8 @@ func (request RequestGetPersonByID) Validate() errors.CommonError {
 		return errors.NewInvaliFieldError("id")
 	}
 	return nil
+}
+
+func (intention *RequestGetPersonByID) IsEmpty() bool {
+	return reflect.DeepEqual(&RequestGetPersonByID{}, intention)
 }

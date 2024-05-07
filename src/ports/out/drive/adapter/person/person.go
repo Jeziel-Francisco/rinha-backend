@@ -37,6 +37,14 @@ func (adapter *personDatabaseAdapter) GetPersonByID(ID string) (*entities.Person
 	return mapper.FromResponseGetPersonDtoToPerson(result), nil
 }
 
+func (adapter *personDatabaseAdapter) GetPersonByTerm(term string) ([]*entities.Person, errors.CommonError) {
+	result, err := adapter.personDatabase.GetPersonByTerm(term)
+	if err != nil {
+		return nil, err
+	}
+	return mapper.FromListResponseGetPersonDtoToListPerson(result), nil
+}
+
 func (adapter *personDatabaseAdapter) Create(person *entities.Person) (*entities.Person, errors.CommonError) {
 	result, err := adapter.personDatabase.Create(mapper.FromPersonToRequestCreatePersonDto(person))
 	if err != nil {

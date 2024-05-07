@@ -35,6 +35,16 @@ func (adapter *personDatabaseAdapterMock) GetPersonByID(ID string) (*entities.Pe
 	return responseSuccess.(*entities.Person), nil
 }
 
+func (adapter *personDatabaseAdapterMock) GetPersonByTerm(term string) ([]*entities.Person, errors.CommonError) {
+	args := adapter.Called(term)
+	responseSuccess, responseError := args[0], args[1]
+
+	if responseError != nil {
+		return nil, responseError.(errors.CommonError)
+	}
+	return responseSuccess.([]*entities.Person), nil
+}
+
 func (adapter *personDatabaseAdapterMock) Create(person *entities.Person) (*entities.Person, errors.CommonError) {
 	args := adapter.Called(person)
 	responseSuccess, responseError := args[0], args[1]

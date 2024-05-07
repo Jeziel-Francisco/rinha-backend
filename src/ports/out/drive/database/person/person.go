@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 )
 
 var (
@@ -27,6 +28,7 @@ func NewPersonDatabase(database infraestructure.Database) PersonDatabase {
 type PersonDatabase interface {
 	GetPersonByNickname(nickname string) (*dto.ResponseGetPersonDto, errors.CommonError)
 	GetPersonByID(ID uuid.UUID) (*dto.ResponseGetPersonDto, errors.CommonError)
+	GetPersonByTerm(term string) ([]*dto.ResponseGetPersonDto, errors.CommonError)
 	Create(person *dto.RequestCreatePersonDto) (*dto.ResponseCreatePersonDto, errors.CommonError)
 }
 
@@ -73,6 +75,34 @@ func (client *personDatabase) GetPersonByID(ID uuid.UUID) (*dto.ResponseGetPerso
 		BirthDate: birthDate.String(),
 		Stacks:    strings.Split(stacks, ","),
 	}, nil
+}
+
+func (client *personDatabase) GetPersonByTerm(term string) ([]*dto.ResponseGetPersonDto, errors.CommonError) {
+	var nickname, name, stacks string
+	var birthDate time.Time
+	var ID uuid.UUID
+
+	rows, err := client.database.GetPoolConnection().Query(context.Background(), scriptGetPersonByTerm, term)
+	if client.database.HasError(err) {
+		return nil, errors.NewClientErrorByError(err)
+	}
+	if client.database.HasEmptyData(err) {
+		return nil, nil
+	}
+	results, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (*dto.ResponseGetPersonDto, error) {
+		row.Scan(&ID, &nickname, &name, &birthDate, &stacks)
+		return &dto.ResponseGetPersonDto{
+			ID:        ID,
+			Nickname:  nickname,
+			Name:      name,
+			BirthDate: birthDate.String(),
+			Stacks:    strings.Split(stacks, ","),
+		}, nil
+	})
+	if err != nil {
+		return nil, errors.NewClientErrorByError(err)
+	}
+	return results, nil
 }
 
 func (client *personDatabase) Create(person *dto.RequestCreatePersonDto) (*dto.ResponseCreatePersonDto, errors.CommonError) {

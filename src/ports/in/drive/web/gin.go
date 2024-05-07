@@ -22,7 +22,7 @@ func (webGin Gin) InitializeGin() {
 	r.GET("/ping", adapter.GinAdapter(webGin.handler.Ping), adapter.GinAdapter(webGin.handler.PersonCreate))
 	r.POST("/pessoas", adapter.GinAdapter(webGin.handler.PersonCreate))
 	r.GET("/pessoas/:id", adapter.GinAdapter(webGin.handler.GetPersonByID))
-	r.GET("/pessoas", adapter.GinAdapter(webGin.handler.PersonCreate))
+	r.GET("/pessoas", adapter.GinAdapter(webGin.handler.GetPersonByTerm))
 	r.GET("/contagem-pessoas", adapter.GinAdapter(webGin.handler.PersonCreate))
 	r.Run()
 }

@@ -2,6 +2,7 @@ package dto
 
 import (
 	"docker-example/src/commons/errors"
+	"reflect"
 	"time"
 )
 
@@ -40,4 +41,8 @@ func (person *RequestCreatePersonDto) Validate() errors.CommonError {
 		}
 	}
 	return nil
+}
+
+func (person *RequestCreatePersonDto) IsEmpty() bool {
+	return reflect.DeepEqual(&RequestCreatePersonDto{}, person)
 }
