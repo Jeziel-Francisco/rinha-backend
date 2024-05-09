@@ -45,6 +45,14 @@ func (adapter *personDatabaseAdapter) GetPersonByTerm(term string) ([]*entities.
 	return mapper.FromListResponseGetPersonDtoToListPerson(result), nil
 }
 
+func (adapter *personDatabaseAdapter) CountPerson() (*uint64, errors.CommonError) {
+	result, err := adapter.personDatabase.CountPerson()
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
 func (adapter *personDatabaseAdapter) Create(person *entities.Person) (*entities.Person, errors.CommonError) {
 	result, err := adapter.personDatabase.Create(mapper.FromPersonToRequestCreatePersonDto(person))
 	if err != nil {

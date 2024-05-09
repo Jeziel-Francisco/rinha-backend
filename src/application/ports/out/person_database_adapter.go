@@ -9,5 +9,6 @@ type PersonDatabaseAdapter interface {
 	GetPersonByNickname(nickName string) (*entities.Person, errors.CommonError)
 	GetPersonByID(ID string) (*entities.Person, errors.CommonError)
 	GetPersonByTerm(term string) ([]*entities.Person, errors.CommonError)
+	CountPerson() (*uint64, errors.CommonError)
 	Create(person *entities.Person) (*entities.Person, errors.CommonError)
 }

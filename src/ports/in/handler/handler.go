@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"docker-example/src/application/domain/entities"
 	"docker-example/src/commons/errors"
 	defaultDto "docker-example/src/ports/in/drive/web/dto"
 	"docker-example/src/ports/in/handler/dto"
@@ -19,19 +20,23 @@ type Handler interface {
 		requestHeaders map[string][]string, requestBody []byte) (interface{}, errors.CommonError)
 	GetPersonByTerm(requestPathParam map[string][]string, requestQueryParam map[string][]string,
 		requestHeaders map[string][]string, requestBody []byte) (interface{}, errors.CommonError)
+	CountPerson(requestPathParam map[string][]string, requestQueryParam map[string][]string,
+		requestHeaders map[string][]string, requestBody []byte) (interface{}, errors.CommonError)
 }
 
 type handler struct {
 	personCreateUseCase    usecase.UseCase
 	getPersonByIDUseCase   usecase.UseCase
 	getPersonByTermUseCase usecase.UseCase
+	countPersonUseCase     usecase.UseCase
 }
 
-func NewHandler(personCreateUseCase usecase.UseCase, getPersonByIDUseCase usecase.UseCase, getPersonByTermUseCase usecase.UseCase) Handler {
+func NewHandler(personCreateUseCase, getPersonByIDUseCase, getPersonByTermUseCase, countPersonUseCase usecase.UseCase) Handler {
 	return &handler{
 		personCreateUseCase:    personCreateUseCase,
 		getPersonByIDUseCase:   getPersonByIDUseCase,
 		getPersonByTermUseCase: getPersonByTermUseCase,
+		countPersonUseCase:     countPersonUseCase,
 	}
 }
 
@@ -116,6 +121,22 @@ func (handler *handler) GetPersonByTerm(requestPathParam map[string][]string, re
 
 	return &defaultDto.DefaultResponse{
 		ResponseBody:    mapper.FromGetPersonByTermToListResponseGetPersonDetail(intention.People),
+		ResponseCode:    http.StatusOK,
+		ResponseHeaders: map[string]string{},
+	}, nil
+}
+
+func (handler *handler) CountPerson(requestPathParam map[string][]string, requestQueryParam map[string][]string,
+	requestHeaders map[string][]string, requestBody []byte) (interface{}, errors.CommonError) {
+
+	intention := &entities.CountPersonIntention{}
+
+	if err := handler.countPersonUseCase.Execute(intention); err != nil {
+		return nil, err
+	}
+
+	return &defaultDto.DefaultResponse{
+		ResponseBody:    mapper.FromUInt64ToResponseCountPerson(&intention.QuantityPerson),
 		ResponseCode:    http.StatusOK,
 		ResponseHeaders: map[string]string{},
 	}, nil

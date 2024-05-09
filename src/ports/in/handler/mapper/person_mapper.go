@@ -73,3 +73,12 @@ func FromGetPersonByTermToListResponseGetPersonDetail(sources []*entities.Person
 	}
 	return result
 }
+
+func FromUInt64ToResponseCountPerson(source *uint64) *dto.ResponseCountPerson {
+	if source == nil {
+		return &dto.ResponseCountPerson{}
+	}
+	return &dto.ResponseCountPerson{
+		QuantityPerson: *source,
+	}
+}

@@ -43,6 +43,15 @@ func (clientMock *personDatabaseMock) GetPersonByTerm(term string) ([]*dto.Respo
 	return responseSuccess.([]*dto.ResponseGetPersonDto), nil
 }
 
+func (clientMock *personDatabaseMock) CountPerson() (*uint64, errors.CommonError) {
+	args := clientMock.Called()
+	responseSuccess, responseError := args[0], args[1]
+	if responseError != nil {
+		return nil, responseError.(errors.CommonError)
+	}
+	return responseSuccess.(*uint64), nil
+}
+
 func (clientMock *personDatabaseMock) Create(person *dto.RequestCreatePersonDto) (*dto.ResponseCreatePersonDto, errors.CommonError) {
 	args := clientMock.Called(person)
 	responseSuccess, responseError := args[0], args[1]

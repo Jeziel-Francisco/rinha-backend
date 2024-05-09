@@ -16,6 +16,7 @@ var (
 	scriptGetPersonByNickname = "select id, nickname, name, birthdate, stack from public.person where nickname = $1"
 	scriptGetPersonByID       = "select id, nickname, name, birthdate, stack from public.person where id = $1"
 	scriptGetPersonByTerm     = "select id, nickname, name, birthdate, stack from public.person where search LIKE '%' || $1 || '%'"
+	scriptCountPerson         = "select COUNT(1) from public.person"
 	scriptInsertPerson        = "INSERT INTO public.person (id, nickname, name, birthdate, stack, search) VALUES ($1, $2, $3, $4, $5, $6);"
 )
 
@@ -30,6 +31,7 @@ type PersonDatabase interface {
 	GetPersonByID(ID uuid.UUID) (*dto.ResponseGetPersonDto, errors.CommonError)
 	GetPersonByTerm(term string) ([]*dto.ResponseGetPersonDto, errors.CommonError)
 	Create(person *dto.RequestCreatePersonDto) (*dto.ResponseCreatePersonDto, errors.CommonError)
+	CountPerson() (*uint64, errors.CommonError)
 }
 
 type personDatabase struct {
@@ -103,6 +105,19 @@ func (client *personDatabase) GetPersonByTerm(term string) ([]*dto.ResponseGetPe
 		return nil, errors.NewClientErrorByError(err)
 	}
 	return results, nil
+}
+
+func (client *personDatabase) CountPerson() (*uint64, errors.CommonError) {
+	var quantityPerson uint64
+
+	err := client.database.GetPoolConnection().QueryRow(context.Background(), scriptCountPerson).Scan(&quantityPerson)
+	if client.database.HasError(err) {
+		return nil, errors.NewClientErrorByError(err)
+	}
+	if client.database.HasEmptyData(err) {
+		return nil, nil
+	}
+	return &quantityPerson, nil
 }
 
 func (client *personDatabase) Create(person *dto.RequestCreatePersonDto) (*dto.ResponseCreatePersonDto, errors.CommonError) {

@@ -23,6 +23,6 @@ func (webGin Gin) InitializeGin() {
 	r.POST("/pessoas", adapter.GinAdapter(webGin.handler.PersonCreate))
 	r.GET("/pessoas/:id", adapter.GinAdapter(webGin.handler.GetPersonByID))
 	r.GET("/pessoas", adapter.GinAdapter(webGin.handler.GetPersonByTerm))
-	r.GET("/contagem-pessoas", adapter.GinAdapter(webGin.handler.PersonCreate))
+	r.GET("/contagem-pessoas", adapter.GinAdapter(webGin.handler.CountPerson))
 	r.Run()
 }
