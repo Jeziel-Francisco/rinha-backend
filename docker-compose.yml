@@ -3,7 +3,7 @@ version: '3.9'
 services:
   postgres:
     image: postgres
-    # hostname: db
+    hostname: db
     restart: always
     environment:
       POSTGRES_PASSWORD: postgres
@@ -13,10 +13,9 @@ services:
       - 5432:5432
     volumes:
       - ./postgres_data:/var/lib/postgresql/data
-      - ./postgresql.conf:/docker-entrypoint-initdb.d/postgresql.conf
-    command: postgres -c config_file=/docker-entrypoint-initdb.d/postgresql.conf
+      - ./scripts/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready"]
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       timeout: 5s
       retries: 20
@@ -33,29 +32,12 @@ services:
       DB_POSTGRES_PASSWORD: postgres
       DB_POSTGRES_USER: postgres
       DB_POSTGRES_DB: docker_example
-      # DB_POSTGRES_HOST: db
-      DB_POSTGRES_HOST: localhost
+      DB_POSTGRES_HOST: db
+      ENVIRONMENT: dev
       DB_POSTGRES_PORT: 5432
     restart: always
     ports:
       - 8080:8081
     depends_on:
-      - postgres
-  # app2:
-  #   # image: jeziel/dockerexample:latest
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   hostname: app2
-  #   environment:
-  #     HTTP_PORT: 8080
-  #     DB_POSTGRES_PASSWORD: postgres
-  #     DB_POSTGRES_USER: postgres
-  #     DB_POSTGRES_DB: docker_example
-  #     DB_POSTGRES_HOST: postgres_db
-  #     DB_POSTGRES_PORT: 5432
-  #   restart: always
-  #   expose:
-  #     - "8080"
-  #   depends_on:
-  #     - postgres_db
+      postgres:
+        condition: service_healthy
