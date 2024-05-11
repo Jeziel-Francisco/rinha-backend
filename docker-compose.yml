@@ -22,8 +22,13 @@ services:
       timeout: 5s
       retries: 20
       start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.9'
+          memory: '1.5GB'
 
-  app1:
+  app1: &app
     # image: jeziel/dockerexample:latest
     build:
       context: .
@@ -38,36 +43,18 @@ services:
       ENVIRONMENT: dev
       DB_POSTGRES_PORT: 5432
     restart: always
-    ports:
-      - 8080:8080
-    expose:
-      - 8080
     depends_on:
       postgres:
         condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '0.20'
+          memory: '0.5GB'
   
   app2:
-    # image: jeziel/dockerexample:latest
-    build:
-      context: .
-      dockerfile: Dockerfile
+    <<: *app
     hostname: app2
-    environment:
-      PORT: 8080
-      DB_POSTGRES_PASSWORD: postgres
-      DB_POSTGRES_USER: postgres
-      DB_POSTGRES_DB: docker_example
-      DB_POSTGRES_HOST: db
-      ENVIRONMENT: dev
-      DB_POSTGRES_PORT: 5432
-    restart: always
-    ports:
-      - 8080:8080
-    expose:
-      - 8080
-    depends_on:
-      postgres:
-        condition: service_healthy
 
   nginx:
     image: nginx:latest
@@ -81,3 +68,8 @@ services:
       - "9999:9999"
     expose:
       - 9999
+    deploy:
+      resources:
+        limits:
+          cpus: '0.20'
+          memory: '0.5GB'

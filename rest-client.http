@@ -1,6 +1,6 @@
 # Create person
 # @name createPerson
-POST http://localhost:8080/pessoas  HTTP/1.1
+POST http://localhost:9999/pessoas  HTTP/1.1
 Content-Type: application/json
 
 {
@@ -17,18 +17,18 @@ Content-Type: application/json
 @personID = {{createPerson.response.headers.Location}}
 # Get person by id
 # @getPersonByID
-GET http://localhost:8080/pessoas/{{personID}} HTTP/1.1
+GET http://localhost:9999/pessoas/{{personID}} HTTP/1.1
 Content-Type: application/application/json
 
 ###
 
 # Get person by id
 # @getPersonByTerm
-GET http://localhost:8080/pessoas?t={{personID}} HTTP/1.1
+GET http://localhost:9999/pessoas?t={{personID}} HTTP/1.1
 Content-Type: application/application/json
 
 
 # Count person
 # @name countPerson
-GET http://localhost:8080/contagem-pessoas HTTP/1.1
+GET http://localhost:9999/contagem-pessoas HTTP/1.1
 Content-Type: application/application/json
